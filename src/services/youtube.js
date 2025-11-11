@@ -3,14 +3,17 @@ const { Innertube } = require('youtubei.js');
 let yt;
 
 async function getClient() {
-  if (!yt) yt = await Innertube.create();
+  if (!yt) {
+    console.log('🔄 Inicializando cliente YouTubei.js...');
+    yt = await Innertube.create();
+    console.log('✅ Cliente YouTubei.js inicializado com sucesso.');
+  }
   return yt;
 }
 
 async function searchVideos(query) {
   const client = await getClient();
   const res = await client.search(query, { type: 'video' });
-
   return res.videos.slice(0, 10).map(v => ({
     id: v.id,
     title: v.title,

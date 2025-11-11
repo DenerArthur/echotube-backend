@@ -1,5 +1,5 @@
-import express from "express";
-import { getAudioUrl } from "../services/youtube.js";
+const express = require("express");
+const { getAudioUrl } = require("../services/youtube");
 
 const router = express.Router();
 
@@ -7,6 +7,7 @@ router.get("/", async (req, res) => {
   try {
     const { id } = req.query;
     if (!id) return res.status(400).json({ error: "Falta o parâmetro id" });
+
     const result = await getAudioUrl(id);
     res.json(result);
   } catch (err) {
@@ -15,4 +16,4 @@ router.get("/", async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

@@ -1,53 +1,34 @@
-import { Innertube } from "youtubei.js";
+const ytdl = require("ytdl-core");
+const ytSearch = require("yt-search");
 
-let ytInstance = null;
-let initInProgress = false;
-
-async function getClient() {
-  if (ytInstance) return ytInstance;
-
-  if (!initInProgress) {
-    initInProgress = true;
-    console.log("🔄 Inicializando YouTubei.js...");
-    try {
-      ytInstance = await Innertube.create();
-      console.log("✅ YouTubei.js pronto!");
-    } catch (err) {
-      console.error("❌ Erro ao iniciar YouTubei.js:", err);
-    } finally {
-      initInProgress = false;
-    }
-  }
-
-  while (!ytInstance) {
-    await new Promise(r => setTimeout(r, 500));
-  }
-
-  return ytInstance;
-}
-
-export async function searchVideos(query) {
-  const client = await getClient();
-  const res = await client.search(query, { type: "video" });
-  return res.videos.slice(0, 10).map(v => ({
-    id: v.id,
+// 🔍 Buscar vídeos
+async function searchVideos(query) {
+  const r = await ytSearch(query);
+  const videos = r.videos.slice(0, 10);
+  return videos.map(v => ({
+    id: v.videoId,
     title: v.title,
-    duration: v.duration?.text || "0:00",
-    thumbnails: v.thumbnails,
-    author: v.author?.name,
+    duration: v.timestamp,
+    author: v.author.name,
+    thumbnails: [{ url: v.thumbnail }]
   }));
 }
 
-export async function getAudioUrl(videoId) {
-  const client = await getClient();
-  const info = await client.getInfo(videoId);
-  const bestAudio = info.streaming_data?.adaptive_formats?.find(f =>
-    f.mime_type?.includes("audio/mp4")
-  );
+// 🎵 Obter URL de streaming de áudio
+async function getAudioUrl(videoId) {
+  if (!videoId) throw new Error("ID do vídeo não fornecido");
+
+  const info = await ytdl.getInfo(videoId);
+  const audioFormat = ytdl.chooseFormat(info.formats, {
+    filter: "audioonly",
+    quality: "highestaudio"
+  });
 
   return {
     id: videoId,
-    title: info.basic_info?.title,
-    audioUrl: bestAudio?.url || null,
+    title: info.videoDetails.title,
+    audioUrl: audioFormat.url
   };
 }
+
+module.exports = { searchVideos, getAudioUrl };

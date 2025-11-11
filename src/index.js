@@ -1,29 +1,34 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
 
-const searchRouter = require('./routes/search');
-const streamRouter = require('./routes/stream');
+import searchRouter from "./routes/search.js";
+import streamRouter from "./routes/stream.js";
 
+dotenv.config();
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-// Rota raiz para teste rápido
-app.get('/', (req, res) => {
+// Rota de teste
+app.get("/", (req, res) => {
   res.json({
-    status: 'online',
-    message: 'EchoTube Backend ativo!',
-    version: '1.0.0',
+    status: "✅ online",
+    message: "EchoTube Backend rodando com sucesso!",
+    version: "1.0.2",
+    uptime: process.uptime().toFixed(2) + "s",
   });
 });
 
-app.use('/search', searchRouter);
-app.use('/stream', streamRouter);
+app.use("/search", searchRouter);
+app.use("/stream", streamRouter);
 
-// Railway define automaticamente a porta via variável de ambiente
 const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ EchoTube backend rodando na porta ${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
+
+setInterval(() => {
+  console.log("⏳ Mantendo servidor ativo...");
+}, 30000);

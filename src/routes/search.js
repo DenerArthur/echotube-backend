@@ -1,24 +1,18 @@
-const express = require('express');
+import express from "express";
+import { searchVideos } from "../services/youtube.js";
+
 const router = express.Router();
-const { searchVideos } = require('../services/youtube');
-const cache = require('../cache');
 
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const q = req.query.q;
-    if (!q) return res.status(400).json({ error: 'Parâmetro q ausente' });
-
-    const cacheKey = `search:${q}`;
-    const cached = cache.get(cacheKey);
-    if (cached) return res.json(cached);
-
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ error: "Falta o parâmetro q" });
     const results = await searchVideos(q);
-    cache.set(cacheKey, results, 120);
     res.json(results);
   } catch (err) {
-    console.error('Erro na busca:', err);
-    res.status(500).json({ error: 'Erro na busca' });
+    console.error("Erro em /search:", err);
+    res.status(500).json({ error: "Erro interno no servidor" });
   }
 });
 
-module.exports = router;
+export default router;
